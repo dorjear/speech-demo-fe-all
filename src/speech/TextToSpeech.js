@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from "react";
+import { useSpeechSynthesis } from "react-speech-kit";
+
+const TextToSpeech = () => {
+  const [isPaused, setIsPaused] = useState(false);
+  const [utterance, setUtterance] = useState(null);
+  const [voice, setVoice] = useState(null);
+  const [pitch, setPitch] = useState(1);
+  const [rate, setRate] = useState(1);
+  const [volume, setVolume] = useState(1);
+  const [text, setText] = React.useState("");
+  const { speak } = useSpeechSynthesis();
+
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = synth.getVoices();
+
+    setUtterance(u);
+    setVoice(voices[0]);
+
+    return () => {
+      synth.cancel();
+    };
+  }, [text]);
+
+  const handlePlay = () => {
+    const synth = window.speechSynthesis;
+
+    if (isPaused) {
+      synth.resume();
+    } else {
+      utterance.voice = voice;
+      utterance.pitch = pitch;
+      utterance.rate = rate;
+      utterance.volume = volume;
+      synth.speak(utterance);
+    }
+
+    setIsPaused(false);
+  };
+
+  const handlePause = () => {
+    const synth = window.speechSynthesis;
+
+    synth.pause();
+
+    setIsPaused(true);
+  };
+
+  const handleStop = () => {
+    const synth = window.speechSynthesis;
+
+    synth.cancel();
+
+    setIsPaused(false);
+  };
+
+  const handleVoiceChange = (event) => {
+    const voices = window.speechSynthesis.getVoices();
+    setVoice(voices.find((v) => v.name === event.target.value));
+  };
+
+  const handlePitchChange = (event) => {
+    setPitch(parseFloat(event.target.value));
+  };
+
+  const handleRateChange = (event) => {
+    setRate(parseFloat(event.target.value));
+  };
+
+  const handleVolumeChange = (event) => {
+    setVolume(parseFloat(event.target.value));
+  };
+
+  return (
+    <div>
+      <p>In put text to speak</p>
+      <div className="group">
+                <textarea
+                  rows="10"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                ></textarea>
+      </div>
+      <p>No library required To Build a Text-to-Speech component in React.</p>
+      <label>
+        Voice:
+        <select value={voice?.name} onChange={handleVoiceChange}>
+          {window.speechSynthesis.getVoices().map((voice) => (
+            <option key={voice.name} value={voice.name}>
+              {voice.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <br />
+
+      <label>
+        Pitch:
+        <input
+          type="range"
+          min="0.5"
+          max="2"
+          step="0.1"
+          value={pitch}
+          onChange={handlePitchChange}
+        />
+      </label>
+
+      <br />
+
+      <label>
+        Speed:
+        <input
+          type="range"
+          min="0.5"
+          max="2"
+          step="0.1"
+          value={rate}
+          onChange={handleRateChange}
+        />
+      </label>
+      <br />
+      <label>
+        Volume:
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={volume}
+          onChange={handleVolumeChange}
+        />
+      </label>
+
+      <br />
+
+      <button onClick={handlePlay}>{isPaused ? "Resume" : "Play"}</button>
+      <button onClick={handlePause}>Pause</button>
+      <button onClick={handleStop}>Stop</button>
+
+      <p><br /></p>
+      <p>====================================</p>
+      <p>Speak with react-speech-kit</p>
+      <div className="group">
+        <button onClick={() => speak({ text: text })}>
+          Speech
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TextToSpeech;
